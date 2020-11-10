@@ -31,6 +31,7 @@ typedef struct ads_list {
 
 void ads_list_init(ads_list_t* list, void (*destroy)(void*));
 void ads_list_destroy(ads_list_t* list);
+void ads_list_clean(ads_list_t* list);
 
 int ads_list_remove_front(ads_list_t* list, void** ret_data);
 int ads_list_remove_back(ads_list_t* list, void** ret_data);

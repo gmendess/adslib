@@ -9,13 +9,24 @@ void ads_list_init(ads_list_t* list, void (*destroy)(void*)) {
   list->size    = 0;
 }
 
+void ads_list_clean(ads_list_t* list) {
+  while(!ads_list_is_empty(list))
+    ads_list_remove_front(list, NULL);
+}
+
 void ads_list_destroy(ads_list_t* list) {
-  void* data = NULL;
-  while(!ads_list_is_empty(list)) {
-    ads_list_remove_front(list, &data);
-    if(list->destroy)
+  if(list->destroy == NULL)
+    ads_list_clean(list);
+  else {
+    void* data = NULL;
+
+    while(!ads_list_is_empty(list)) {
+      ads_list_remove_front(list, &data);
       list->destroy(data);
+    }
   }
+
+  memset(list, 0, sizeof(ads_list_t));
 }
 
 static inline 
