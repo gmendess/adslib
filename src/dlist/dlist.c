@@ -90,7 +90,7 @@ int ads_dlist_add_prev(ads_dlist_t* dlist,
                        void* data)
 {
   if(node == ads_dlist_get_head(dlist) || node == NULL)
-    return ads_dlist_add_front(dlist);
+    return ads_dlist_add_front(dlist, data);
 
   ads_dlist_node_t* new_node = ads_dlist_new_node(data);
   if(new_node == NULL)
@@ -101,6 +101,8 @@ int ads_dlist_add_prev(ads_dlist_t* dlist,
 
   node->prev->next = new_node;
   node->prev = new_node;
+
+  dlist->size++;
 
   return 0;
 }
