@@ -106,3 +106,24 @@ int ads_dlist_add_prev(ads_dlist_t* dlist,
 
   return 0;
 }
+
+int ads_dlist_remove_front(ads_dlist_t* dlist, void** ret_data) {
+  if(ads_dlist_is_empty(dlist))
+    return -1;
+
+  ads_dlist_node_t* old_head = ads_dlist_get_head(dlist);
+  if(ret_data)
+    *ret_data = old_head->data;
+
+  dlist->head = old_head->next;
+
+  dlist->size--;
+  free(old_head);
+
+  if(ads_dlist_is_empty(dlist))
+    dlist->tail = NULL;
+  else
+    dlist->head->prev = NULL;
+
+  return 0;
+}
