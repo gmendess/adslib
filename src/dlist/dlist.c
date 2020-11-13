@@ -127,3 +127,60 @@ int ads_dlist_remove_front(ads_dlist_t* dlist, void** ret_data) {
 
   return 0;
 }
+
+int ads_dlist_remove_next(ads_dlist_t* dlist,
+                          ads_dlist_node_t* node,
+                          void** ret_data)
+{
+  if(node == NULL)
+    return ads_dlist_remove_front(dlist, ret_data);
+  else if(node == ads_dlist_get_tail(dlist))
+    return -1;
+
+  ads_dlist_node_t* rem_node = ads_dlist_get_next(node);
+  if(ret_data)
+    *ret_data = rem_node->data;
+
+  node->next = rem_node->next;
+  if(node->next == NULL)
+    dlist->tail = node;
+  else
+    node->next->prev = node;
+
+  dlist->size--;
+  free(rem_node);
+
+  return 1;
+}
+
+int ads_dlist_remove_back(ads_dlist_t* dlist, void** ret_data) {
+
+}
+
+static inline
+ads_dlist_node_t* ads_dlist_look_back(ads_dlist_node_t* node, int steps) {
+  for(int i = 0; i != steps && node; i++)
+    node = node->prev;
+  return node;
+}
+
+static inline
+ads_dlist_node_t* ads_dlist_look_forward(ads_dlist_node_t* node, int steps) {
+  for(int i = 0; i != steps && node; i++)
+    node = node->next;
+  return node;
+}
+
+ads_dlist_node_t* ads_dlist_get_at(ads_dlist_t* dlist, int index) {
+  size_t dlist_size = ads_dlist_get_size(dlist);
+
+  if(index < 0 || index >= dlist_size)
+    return NULL;
+
+  int middle = dlist_size / 2;
+
+  if(index >= middle)
+    return ads_dlist_find_back(dlist->tail, (dlist_size - 1) - index);
+  else
+    return ads_dlist_find_forward(dlist->head, index);
+}
