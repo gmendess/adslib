@@ -41,4 +41,6 @@ void ads_string_move(ads_string_t* dest, ads_string_t* src);
 
 void ads_string_clear(ads_string_t* str);
 
+int ads_string_replace(ads_string_t* str, const char* old, const char* new);
+
 #endif
