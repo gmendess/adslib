@@ -1,4 +1,9 @@
 #include "string.h"
+
+#ifdef ADS_STRING_EXTENDED
+#include "../list/list.h"
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
@@ -55,11 +60,11 @@ ads_string_internal_copy(ads_string_t* dest,
     char* new_ptr = calloc(src_capacity + 1, sizeof(char));
     if(new_ptr == NULL)
       return -1;
-    
+
     // if dest's string is in the free store(heap), we must free it before the assignment
     if(!ads_string_is_optimized(dest))
       free(dest->ptr);
-  
+
     // points to the new region of memory that will store a copy of src_ptr's string
     dest->ptr = new_ptr;
   }
@@ -90,7 +95,7 @@ ads_string_concat_internal(ads_string_t* dest,
     if(double_capacity(dest) != 0)
       return -1;
   }
-  
+
   // concatenate src in dest
   // &dest->ptr[dest->size] = address of `\0` in dest->ptr
   memcpy(&dest->ptr[dest->size], src_ptr, src_size + 1);
@@ -166,7 +171,7 @@ int ads_string_substr(const ads_string_t* str,
 {
   if(pos >= str->size)
     return -1;
-  
+
   if( count == -1 || (count > str->size - pos))
     dest->size = str->size - pos; // copy the whole string starting at pos
   else
@@ -201,7 +206,7 @@ void ads_string_move(ads_string_t* dest, ads_string_t* src) {
 
   if(ads_string_is_optimized(dest))
     dest->ptr = dest->basic_str;
-  
+
   src->ptr = NULL;
   ads_string_clear(src);
 }
@@ -290,7 +295,7 @@ ads_string_replace_gain_char(ads_string_t* str,
       size_t found_offset = found - str->ptr;
       if(double_capacity(str) != 0)
         return -1;
-      found = &str->ptr[found_offset]; // reajust found pointer after realloc
+      found = &str->ptr[found_offset]; // reajust found pointer after `double_capacity`
     }
 
     char* rest = found + old_str_size; // rest of text (in the ex. = "345")
@@ -346,7 +351,85 @@ int ads_string_replace(ads_string_t* str, const char* old_str, const char* new_s
     return ads_string_replace_gain_char(str, old_str, old_str_size, new_str, new_str_size);
   else
     return ads_string_replace_equal_char(str, old_str, new_str, new_str_size);
-
-  return 0;
-
 }
+
+// compile with -DADS_STRING_EXTENDED option
+#ifdef ADS_STRING_EXTENDED
+
+static void
+ads_string_list_destroy(void* data) {
+  ads_string_t* _data = data;
+
+  ads_string_destroy(_data);
+  free(_data);
+}
+
+static ads_string_t*
+ads_string_split_create_data(const char* str, size_t str_size) {
+
+  ads_string_t* data = calloc(1, sizeof(ads_string_t));
+  if(data == NULL)
+    goto nomem_err_1; // just return NULL
+
+  if(str_size > BASIC_SIZE) {
+    data->ptr = calloc(str_size, sizeof(char));
+    if(data->ptr == NULL)
+      goto nomem_err_2; // free `data` and return NULL
+    data->capacity = str_size;
+  }
+  else {
+    data->ptr = data->basic_str;
+    data->capacity = BASIC_SIZE;
+  }
+
+  data->size = str_size;
+  memcpy(data->ptr, str, str_size);
+  return data; // success, return data
+
+// on error, go to one of these labels, free memory(if needed) and return NULL
+nomem_err_2:
+  free(data);
+nomem_err_1:
+  return NULL;
+}
+
+int ads_string_split(ads_string_t* str, const char* delimiter, ads_list_t* out) {
+  out->destroy = ads_string_list_destroy;
+
+  if(delimiter[0] == '\0')
+    return 0;
+  size_t delimiter_size = strlen(delimiter);
+
+  char* save_str_ptr  = str->ptr,
+      * found         = NULL;
+
+  // data that will be pushed into the list
+  ads_string_t* data = NULL;
+
+  while( (found = strstr(save_str_ptr, delimiter)) != NULL ) {
+    size_t found_size = found - save_str_ptr;
+
+    // create an ads_string_t to be pushed into the list
+    data = ads_string_split_create_data(save_str_ptr, found_size);
+    if(data == NULL)
+      return -1;
+
+    if(ads_list_push_back(out, data) == -1) // push data into the list
+      return -1;
+    save_str_ptr = found + delimiter_size;
+  }
+
+  size_t rest_size = str->size - (save_str_ptr - str->ptr);
+  if(rest_size > 0 && rest_size != str->size) {
+    // create an ads_string_t to be pushed into the list
+    data = ads_string_split_create_data(save_str_ptr, rest_size);
+    if(data == NULL)
+      return -1;
+
+    if(ads_list_push_back(out, data) == -1) // push data into the list
+      return -1;
+  }
+
+  return out->size;
+}
+#endif

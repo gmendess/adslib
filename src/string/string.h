@@ -3,6 +3,11 @@
 
 #include <stdlib.h>
 
+// compile with -DADS_STRING_EXTENDED option
+#ifdef ADS_STRING_EXTENDED
+#include "../list/list.h"
+#endif
+
 /*
   STRING HEADER
 */
@@ -42,5 +47,9 @@ void ads_string_move(ads_string_t* dest, ads_string_t* src);
 void ads_string_clear(ads_string_t* str);
 
 int ads_string_replace(ads_string_t* str, const char* old, const char* new);
+
+#ifdef ADS_STRING_EXTENDED
+int ads_string_split(ads_string_t* str, const char* delimiters, ads_list_t* out);
+#endif
 
 #endif
