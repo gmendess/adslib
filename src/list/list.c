@@ -40,7 +40,7 @@ ads_list_node_t* ads_list_new_node(void* data) {
   return new_node;
 }
 
-int ads_list_add_back(ads_list_t* list, void* data) {
+int ads_list_push_back(ads_list_t* list, void* data) {
   ads_list_node_t* new_node = ads_list_new_node(data);
   if(new_node == NULL)
     return -1;
@@ -57,7 +57,7 @@ int ads_list_add_back(ads_list_t* list, void* data) {
   return 0;
 }
 
-int ads_list_add_front(ads_list_t* list, void* data) {
+int ads_list_push_front(ads_list_t* list, void* data) {
   ads_list_node_t* new_node = ads_list_new_node(data);
   if(new_node == NULL)
     return -1;
@@ -73,14 +73,14 @@ int ads_list_add_front(ads_list_t* list, void* data) {
   return 0;
 }
 
-int ads_list_add_next(ads_list_t*      list, 
+int ads_list_push_next(ads_list_t*      list,
                       ads_list_node_t* node, 
                       void*            data)
 {
   if(node == NULL) 
-    return ads_list_add_front(list, data);
+    return ads_list_push_front(list, data);
   else if(node == ads_list_get_tail(list))
-    return ads_list_add_back(list, data);
+    return ads_list_push_back(list, data);
 
   ads_list_node_t* new_node = ads_list_new_node(data);
   if(new_node == NULL)
