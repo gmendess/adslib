@@ -12,20 +12,20 @@
 static inline void
 ads_string_init_optimize(ads_string_t* str) {
   str->capacity = BASIC_SIZE; // capacity is the size of basic_str
-  str->ptr = str->basic_str;
+  str->buf = str->basic_str;
 }
 
 static inline char* 
 expand(ads_string_t* str, size_t new_capacity) {
-  char* new_ptr = calloc(new_capacity + 1, sizeof(char));
-  if(new_ptr != NULL)
-    memcpy(new_ptr, str->ptr, str->size + 1);
+  char* new_buf = calloc(new_capacity + 1, sizeof(char));
+  if(new_buf != NULL)
+    memcpy(new_buf, str->buf, str->size + 1);
 
   str->capacity = new_capacity;
-  return new_ptr;
+  return new_buf;
   
   /*
-    Note: this function can't be just a realloc, because str->ptr can point
+    Note: this function can't be just a realloc, because str->buf can point
     to str->basic_str. Thus, would be undefined behaviour to try to realloc a
     region of memory on the stack.
   */
@@ -36,46 +36,46 @@ double_capacity(ads_string_t* str) {
   size_t old_capacity = str->capacity;
 
   // double the capacity
-  char* new_ptr = expand(str, str->capacity * 2);
-  if(new_ptr == NULL)
+  char* new_buf = expand(str, str->capacity * 2);
+  if(new_buf == NULL)
     return -1;
 
   if(old_capacity > BASIC_SIZE)
-    free(str->ptr);
+    free(str->buf);
 
-  str->ptr = new_ptr;
+  str->buf = new_buf;
   return 0;
 }
 
 static int
 ads_string_internal_copy(ads_string_t* dest,
-                         const char*   src_ptr,
+                         const char*   src_buf,
                          size_t        src_size,
                          size_t        src_capacity)
 {
 
-  // the size of src_ptr' string is bigger than dest's capacity
+  // the size of src_buf' string is bigger than dest's capacity
   if(src_size > dest->capacity) {    
-    // get a new region of memory that fits src_ptr's string
-    char* new_ptr = calloc(src_capacity + 1, sizeof(char));
-    if(new_ptr == NULL)
+    // get a new region of memory that fits src_buf's string
+    char* new_buf = calloc(src_capacity + 1, sizeof(char));
+    if(new_buf == NULL)
       return -1;
 
     // if dest's string is in the free store(heap), we must free it before the assignment
     if(!ads_string_is_optimized(dest))
-      free(dest->ptr);
+      free(dest->buf);
 
-    // points to the new region of memory that will store a copy of src_ptr's string
-    dest->ptr = new_ptr;
+    // points to the new region of memory that will store a copy of src_buf's string
+    dest->buf = new_buf;
   }
-  // dest is not optimized, but src_ptr's string can be optimized (stored in dest->basic_str)
+  // dest is not optimized, but src_buf's string can be optimized (stored in dest->basic_str)
   else if(!ads_string_is_optimized(dest) && src_capacity == BASIC_SIZE) {
-    free(dest->ptr);
-    dest->ptr = dest->basic_str;
+    free(dest->buf);
+    dest->buf = dest->basic_str;
   }
 
   // copy :)
-  memcpy(dest->ptr, src_ptr, src_size + 1);
+  memcpy(dest->buf, src_buf, src_size + 1);
   dest->capacity = src_capacity;
   dest->size     = src_size;
 
@@ -84,7 +84,7 @@ ads_string_internal_copy(ads_string_t* dest,
 
 static int
 ads_string_concat_internal(ads_string_t* dest,
-                           const char*   src_ptr,
+                           const char*   src_buf,
                            size_t        src_size,
                            size_t        src_capacity)
 {
@@ -97,8 +97,8 @@ ads_string_concat_internal(ads_string_t* dest,
   }
 
   // concatenate src in dest
-  // &dest->ptr[dest->size] = address of `\0` in dest->ptr
-  memcpy(&dest->ptr[dest->size], src_ptr, src_size + 1);
+  // &dest->buf[dest->size] = address of `\0` in dest->buf
+  memcpy(&dest->buf[dest->size], src_buf, src_size + 1);
   dest->size = new_size;
 
   return 0;
@@ -106,7 +106,7 @@ ads_string_concat_internal(ads_string_t* dest,
 
 void ads_string_clear(ads_string_t* str) {
   if(!ads_string_is_optimized(str))
-    free(str->ptr);
+    free(str->buf);
 
   memset(str, 0, sizeof(ads_string_t));
   ads_string_init_optimize(str);
@@ -128,12 +128,12 @@ int ads_string_init(ads_string_t* str, const char* init_str) {
   else {
     // string in the free store, alloc memory
     str->capacity = str->size;
-    str->ptr = calloc(str->capacity + 1, sizeof(char)); // +1 = '\0'
-    if(!str->ptr)
+    str->buf = calloc(str->capacity + 1, sizeof(char)); // +1 = '\0'
+    if(!str->buf)
       return -1;
   }
 
-  memcpy(str->ptr, init_str, str->size + 1);
+  memcpy(str->buf, init_str, str->size + 1);
 
   return 0;
 }
@@ -141,7 +141,7 @@ int ads_string_init(ads_string_t* str, const char* init_str) {
 void ads_string_destroy(ads_string_t* str) {
   // if the string is stored in heap, free the memory
   if(str->size > BASIC_SIZE)
-    free(str->ptr);
+    free(str->buf);
 
   memset(str, 0, sizeof(ads_string_t));
 }
@@ -150,7 +150,7 @@ int ads_string_concat(ads_string_t* dest, const ads_string_t* src) {
   if(dest == src)
     return 0;
 
-  return ads_string_concat_internal(dest, src->ptr, src->size, src->capacity);
+  return ads_string_concat_internal(dest, src->buf, src->size, src->capacity);
 }
 
 int ads_string_concat_literal(ads_string_t* restrict dest, const char* restrict  src) {
@@ -161,7 +161,7 @@ int ads_string_concat_literal(ads_string_t* restrict dest, const char* restrict 
 }
 
 const char* ads_string_contains(const ads_string_t* haystack, const ads_string_t* needle) {
-  return strstr(haystack->ptr, needle->ptr);
+  return strstr(haystack->buf, needle->buf);
 }
 
 int ads_string_substr(const ads_string_t* str, 
@@ -181,17 +181,17 @@ int ads_string_substr(const ads_string_t* str,
     ads_string_init_optimize(dest);
   else {
     dest->capacity = dest->size;
-    dest->ptr = malloc(dest->capacity + 1);
-    if(dest->ptr == NULL)
+    dest->buf = malloc(dest->capacity + 1);
+    if(dest->buf == NULL)
       return -1;
   }
 
-  memcpy(dest->ptr, &str->ptr[pos], dest->size + 1);
+  memcpy(dest->buf, &str->buf[pos], dest->size + 1);
   return 0;
 }
 
 int ads_string_copy(ads_string_t* dest, const ads_string_t* src) {
-  return ads_string_internal_copy(dest, src->ptr, src->size, src->capacity);
+  return ads_string_internal_copy(dest, src->buf, src->size, src->capacity);
 }
 
 int ads_string_copy_literal(ads_string_t* dest, const char* src) {
@@ -205,9 +205,9 @@ void ads_string_move(ads_string_t* dest, ads_string_t* src) {
   memcpy(dest, src, sizeof(ads_string_t));
 
   if(ads_string_is_optimized(dest))
-    dest->ptr = dest->basic_str;
+    dest->buf = dest->basic_str;
 
-  src->ptr = NULL;
+  src->buf = NULL;
   ads_string_clear(src);
 }
 
@@ -226,23 +226,23 @@ ads_string_replace_lost_char(ads_string_t* str,
     new_str = "hi"
   */
 
-  char* save_str_ptr = str->ptr; // "12hey345"; this pointer will be manipulated
+  char* save_str_buf = str->buf; // "12hey345"; this pointer will be manipulated
   char* found = NULL;
 
   int count_replaces = 0;
   size_t size_diff = old_str_size - new_str_size; // 3("hey") - 2("hi") = 1
 
-  // while old_str is found in save_str_ptr
-  while( (found = strstr(save_str_ptr, old_str)) ) {
+  // while old_str is found in save_str_buf
+  while( (found = strstr(save_str_buf, old_str)) ) {
     ++count_replaces;
 
     /*
-      in the example, `found` will be the address where "hey" starts in `save_str_ptr`
+      in the example, `found` will be the address where "hey" starts in `save_str_buf`
       "hey" starts at the position 3 in the string
     */
 
     char* rest = found + old_str_size; // rest of text (in the ex. = "345")
-    size_t rest_size = str->size - (rest - str->ptr); // size of rest, in the ex. = 3
+    size_t rest_size = str->size - (rest - str->buf); // size of rest, in the ex. = 3
 
     memcpy(found, new_str, new_str_size); // copy "hi" where "hey" is (str = "12hiy345")
 
@@ -250,10 +250,10 @@ ads_string_replace_lost_char(ads_string_t* str,
     memcpy(found + new_str_size, rest, rest_size); // now, str = "12hi345", note that "345" overlapped the char "y"
 
     str->size -= size_diff; // decrements the number of chars lost ("hey" - "hi" = 1)
-    str->ptr[str->size] = '\0'; // reajust the end of string
+    str->buf[str->size] = '\0'; // reajust the end of string
 
-    // move forward in the string (in the ex. save_str_ptr will be "345"; "12hi" has already been processed)
-    save_str_ptr = found + new_str_size;
+    // move forward in the string (in the ex. save_str_buf will be "345"; "12hi" has already been processed)
+    save_str_buf = found + new_str_size;
   }
 
   return count_replaces;
@@ -274,46 +274,46 @@ ads_string_replace_gain_char(ads_string_t* str,
     new_str = "hey"
   */
 
-  // save_str_ptr = "12hi345"; this pointer will be manipulated to iterate over the string
-  char* save_str_ptr = str->ptr;
+  // save_str_buf = "12hi345"; this pointer will be manipulated to iterate over the string
+  char* save_str_buf = str->buf;
   char* found = NULL;
 
   int count_replaces = 0;
   size_t size_diff = new_str_size - old_str_size; // 3("hey") - 2("hi") = 1
 
-  // while old_str is found in save_str_ptr
-  while( (found = strstr(save_str_ptr, old_str)) ) {
+  // while old_str is found in save_str_buf
+  while( (found = strstr(save_str_buf, old_str)) ) {
     ++count_replaces;
 
     /*
-      in the example, `found` will be the address where "hey" starts in `save_str_ptr`
+      in the example, `found` will be the address where "hey" starts in `save_str_buf`
       "hey" starts at the position 3 in the string
     */
 
     size_t new_size = str->size + size_diff;
     if(new_size > str->capacity) {
-      size_t found_offset = found - str->ptr;
+      size_t found_offset = found - str->buf;
       if(double_capacity(str) != 0)
         return -1;
-      found = &str->ptr[found_offset]; // reajust found pointer after `double_capacity`
+      found = &str->buf[found_offset]; // reajust found pointer after `double_capacity`
     }
 
     char* rest = found + old_str_size; // rest of text (in the ex. = "345")
-    size_t rest_size = str->size - (rest - str->ptr); // size of rest, in the ex. = 3
+    size_t rest_size = str->size - (rest - str->buf); // size of rest, in the ex. = 3
 
     /* move the text forward to fit the new_str
-       str->ptr = "12hi3345" */
+       str->buf = "12hi3345" */
     memmove(found + new_str_size, found + old_str_size, rest_size);
 
     /* copy new_str where the old_str was
-       str->ptr = "12hey345"; note that the duplicated "3" disappear*/
+       str->buf = "12hey345"; note that the duplicated "3" disappear*/
     memcpy(found, new_str, new_str_size);
 
-    save_str_ptr = found + new_str_size;
+    save_str_buf = found + new_str_size;
     str->size += size_diff;
   }
 
-  str->ptr[str->size] = '\0';
+  str->buf[str->size] = '\0';
 
   return count_replaces;
 }
@@ -324,16 +324,16 @@ ads_string_replace_equal_char(ads_string_t* str,
                              const char*   new_str,
                              size_t        size)
 {
-  char* save_str_ptr = str->ptr;
+  char* save_str_buf = str->buf;
   char* found = NULL;
 
   int count_replaces = 0;
 
-  // while old_str is found in save_str_ptr
-  while( (found = strstr(save_str_ptr, old_str)) ) {
+  // while old_str is found in save_str_buf
+  while( (found = strstr(save_str_buf, old_str)) ) {
     ++count_replaces;
     memcpy(found, new_str, size);
-    save_str_ptr = found + size;
+    save_str_buf = found + size;
   }
 
   return count_replaces;
@@ -372,18 +372,18 @@ ads_string_split_create_data(const char* str, size_t str_size) {
     goto nomem_err_1; // just return NULL
 
   if(str_size > BASIC_SIZE) {
-    data->ptr = calloc(str_size, sizeof(char));
-    if(data->ptr == NULL)
+    data->buf = calloc(str_size, sizeof(char));
+    if(data->buf == NULL)
       goto nomem_err_2; // free `data` and return NULL
     data->capacity = str_size;
   }
   else {
-    data->ptr = data->basic_str;
+    data->buf = data->basic_str;
     data->capacity = BASIC_SIZE;
   }
 
   data->size = str_size;
-  memcpy(data->ptr, str, str_size);
+  memcpy(data->buf, str, str_size);
   return data; // success, return data
 
 // on error, go to one of these labels, free memory(if needed) and return NULL
@@ -400,29 +400,29 @@ int ads_string_split(ads_string_t* str, const char* delimiter, ads_list_t* out) 
     return 0;
   size_t delimiter_size = strlen(delimiter);
 
-  char* save_str_ptr  = str->ptr,
+  char* save_str_buf  = str->buf,
       * found         = NULL;
 
   // data that will be pushed into the list
   ads_string_t* data = NULL;
 
-  while( (found = strstr(save_str_ptr, delimiter)) != NULL ) {
-    size_t found_size = found - save_str_ptr;
+  while( (found = strstr(save_str_buf, delimiter)) != NULL ) {
+    size_t found_size = found - save_str_buf;
 
     // create an ads_string_t to be pushed into the list
-    data = ads_string_split_create_data(save_str_ptr, found_size);
+    data = ads_string_split_create_data(save_str_buf, found_size);
     if(data == NULL)
       return -1;
 
     if(ads_list_push_back(out, data) == -1) // push data into the list
       return -1;
-    save_str_ptr = found + delimiter_size;
+    save_str_buf = found + delimiter_size;
   }
 
-  size_t rest_size = str->size - (save_str_ptr - str->ptr);
+  size_t rest_size = str->size - (save_str_buf - str->buf);
   if(rest_size > 0 && rest_size != str->size) {
     // create an ads_string_t to be pushed into the list
-    data = ads_string_split_create_data(save_str_ptr, rest_size);
+    data = ads_string_split_create_data(save_str_buf, rest_size);
     if(data == NULL)
       return -1;
 

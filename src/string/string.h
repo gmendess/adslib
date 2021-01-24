@@ -17,7 +17,7 @@
 typedef struct ads_string {
   size_t size;     // number of characters
   size_t capacity; // number of characters the string can hold at all
-  char* ptr;       // pointer to basic_str(strings up to 15 chars) or to a region in free store(heap)
+  char* buf;       // pointer to basic_str(strings up to 15 chars) or to a region in free store(heap)
 
   /* optimization: the string will be store in this buffer if the numbers of characters in the
      string is up to 15. Small strings can be stored on the stack */
