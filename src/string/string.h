@@ -24,7 +24,7 @@ typedef struct ads_string {
   char basic_str[BASIC_SIZE + 1]; // +1 = '\0'
 } ads_string_t;
 
-#define ads_string_get_buffer(str) ((const char* const) (str)->ptr)
+#define ads_string_get_buffer(str) ((const char* const) (str)->buf)
 #define ads_string_get_size(str) ((str)->size)
 #define ads_string_is_empty(str) ((str)->size == 0)
 #define ads_string_is_optimized(str) ((str)->capacity == BASIC_SIZE)
