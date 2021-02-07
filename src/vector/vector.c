@@ -9,7 +9,7 @@ double_capacity(ads_vector_t* vec)
 {
   void* new_buf = realloc(vec->buf, (vec->capacity * vec->data_size) * 2);
   if(new_buf == NULL)
-    return -1;
+    return 0;
 
   vec->buf = new_buf;
   vec->capacity *= 2;
@@ -17,16 +17,17 @@ double_capacity(ads_vector_t* vec)
   return 1;
 }
 
-int ads_vector_init(ads_vector_t*        vec, 
-                    size_t               data_size,
-                    ads_vector_copy_f    copy,
-                    ads_vector_destroy_f destroy)
+ads_status_t
+ads_vector_init(ads_vector_t*        vec,
+                size_t               data_size,
+                ads_vector_copy_f    copy,
+                ads_vector_destroy_f destroy)
 {
 
   // pre-allocate ADS_VECTOR_PRE_ALLOCATE elements of size = data_size
   vec->buf = calloc(ADS_VECTOR_PRE_ALLOCATE, data_size);
   if(vec->buf == NULL)
-    return 0;
+    return ADS_NOMEM;
 
   vec->data_size = data_size;
   vec->size = 0;
@@ -35,7 +36,7 @@ int ads_vector_init(ads_vector_t*        vec,
   vec->copy = copy ? copy : memcpy;
   vec->destroy = destroy;
 
-  return 1;
+  return ADS_SUCCESS;
 }
 
 void ads_vector_clear(ads_vector_t* vec) {
@@ -52,25 +53,25 @@ void ads_vector_destroy(ads_vector_t* vec) {
   free(vec->buf);    
 }
 
-int ads_vector_push_back(ads_vector_t* vec, void* data) {
+ads_status_t ads_vector_push_back(ads_vector_t* vec, void* data) {
 
   if(ads_vector_is_full(vec)) {
     if(!double_capacity(vec))
-      return -1;
+      return ADS_NOMEM;
   }
 
   void* end = ads_vector_get_idx_address(vec, vec->size);
   vec->copy(end, data, vec->data_size); // memcpy or custom function
   ++vec->size;
 
-  return 1;
+  return ADS_SUCCESS;
 }
 
-int ads_vector_push_front(ads_vector_t* vec, void* data) {
+ads_status_t ads_vector_push_front(ads_vector_t* vec, void* data) {
   
   if(ads_vector_is_full(vec)) {
     if(!double_capacity(vec))
-      return -1;
+      return ADS_NOMEM;
   }
 
   void* start = ads_vector_get_idx_address(vec, 1);
@@ -78,12 +79,12 @@ int ads_vector_push_front(ads_vector_t* vec, void* data) {
   vec->copy(vec->buf, data, vec->data_size); // memcpy or custom function
   ++vec->size;
 
-  return 1;
+  return ADS_SUCCESS;
 }
 
-int ads_vector_insert_at(ads_vector_t* vec, ssize_t index, void* data) {
+ads_status_t ads_vector_insert_at(ads_vector_t* vec, ssize_t index, void* data) {
   if(index < 0 || index > vec->size)
-    return 0;
+    return ADS_OUTOFBOUNDS;
   
   if(index == 0)
     return ads_vector_push_front(vec, data);
@@ -93,7 +94,7 @@ int ads_vector_insert_at(ads_vector_t* vec, ssize_t index, void* data) {
     
     if(ads_vector_is_full(vec)) {
       if(!double_capacity(vec))
-        return -1;
+        return ADS_NOMEM;
     }
 
     void* idx_start = ads_vector_get_idx_address(vec, index);
@@ -103,25 +104,25 @@ int ads_vector_insert_at(ads_vector_t* vec, ssize_t index, void* data) {
     memmove(dest_start, idx_start, bytes_idx_up_to_end);
     vec->copy(idx_start, data, vec->data_size); // memcpy or custom function
 
-    return 1;
+    return ADS_SUCCESS;
 
   }
 }
 
-int ads_vector_get_at(ads_vector_t* vec, ssize_t index, void** out) {
+ads_status_t ads_vector_get_at(ads_vector_t* vec, ssize_t index, void** out) {
   if(index < 0 || index >= vec->size)
-    return 0;
+    return ADS_OUTOFBOUNDS;
 
   if(out)
    *out = ads_vector_get_idx_address(vec, index);
 
-  return 1;
+  return ADS_SUCCESS;
 }
 
-int ads_vector_copy(ads_vector_t* dest, const ads_vector_t* src) {
+ads_status_t ads_vector_copy(ads_vector_t* dest, const ads_vector_t* src) {
   dest->buf = calloc(src->capacity, src->data_size);
   if(dest->buf == NULL)
-    return -1;
+    return ADS_NOMEM;
 
   dest->capacity  = src->capacity;
   dest->size      = src->size;
@@ -131,7 +132,7 @@ int ads_vector_copy(ads_vector_t* dest, const ads_vector_t* src) {
   dest->destroy   = src->destroy;
 
   memcpy(dest->buf, src->buf, src->size * src->data_size);
-  return 1;
+  return ADS_SUCCESS;
 }
 
 static inline void 

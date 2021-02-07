@@ -2,6 +2,7 @@
 #define ADS_STRING_H
 
 #include <stdlib.h>
+#include "../common/error.h"
 
 // compile with -DADS_STRING_EXTENDED option
 #ifdef ADS_STRING_EXTENDED
@@ -29,18 +30,18 @@ typedef struct ads_string {
 #define ads_string_is_empty(str) ((str)->size == 0)
 #define ads_string_is_optimized(str) ((str)->capacity == BASIC_SIZE)
 
-int ads_string_init(ads_string_t* str, const char* init_str);
+ads_status_t ads_string_init(ads_string_t* str, const char* init_str);
 void ads_string_destroy(ads_string_t* str);
 
-int ads_string_concat(ads_string_t* dest, const ads_string_t* src);
-int ads_string_concat_literal(ads_string_t* dest, const char* src);
+ads_status_t ads_string_concat(ads_string_t* dest, const ads_string_t* src);
+ads_status_t ads_string_concat_literal(ads_string_t* dest, const char* src);
 
 const char* ads_string_contains(const ads_string_t* haystack, const ads_string_t* needle);
 
-int ads_string_substr(const ads_string_t* str, size_t pos, int count, ads_string_t* dest);
+ads_status_t ads_string_substr(const ads_string_t* str, size_t pos, int count, ads_string_t* dest);
 
-int ads_string_copy(ads_string_t* dest, const ads_string_t* src);
-int ads_string_copy_literal(ads_string_t* dest, const char* src);
+ads_status_t ads_string_copy(ads_string_t* dest, const ads_string_t* src);
+ads_status_t ads_string_copy_literal(ads_string_t* dest, const char* src);
 
 void ads_string_move(ads_string_t* dest, ads_string_t* src);
 

@@ -11,7 +11,7 @@ void ads_list_init(ads_list_t* list, void (*destroy)(void*)) {
 
 void ads_list_clean(ads_list_t* list) {
   while(!ads_list_is_empty(list))
-    ads_list_remove_front(list, NULL);
+    ads_list_pop_front(list, NULL);
 }
 
 void ads_list_destroy(ads_list_t* list) {
@@ -21,7 +21,7 @@ void ads_list_destroy(ads_list_t* list) {
     void* data = NULL;
 
     while(!ads_list_is_empty(list)) {
-      ads_list_remove_front(list, &data);
+      ads_list_pop_front(list, &data);
       list->destroy(data);
     }
   }
@@ -40,10 +40,10 @@ ads_list_node_t* ads_list_new_node(void* data) {
   return new_node;
 }
 
-int ads_list_push_back(ads_list_t* list, void* data) {
+ads_status_t ads_list_push_back(ads_list_t* list, void* data) {
   ads_list_node_t* new_node = ads_list_new_node(data);
   if(new_node == NULL)
-    return -1;
+    return ADS_NOMEM;
 
   if(ads_list_is_empty(list))
     list->head = new_node;
@@ -54,13 +54,13 @@ int ads_list_push_back(ads_list_t* list, void* data) {
 
   list->size++;
 
-  return 0;
+  return ADS_SUCCESS;
 }
 
-int ads_list_push_front(ads_list_t* list, void* data) {
+ads_status_t ads_list_push_front(ads_list_t* list, void* data) {
   ads_list_node_t* new_node = ads_list_new_node(data);
   if(new_node == NULL)
-    return -1;
+    return ADS_NOMEM;
 
   if(ads_list_is_empty(list))
     list->tail = new_node;
@@ -70,12 +70,13 @@ int ads_list_push_front(ads_list_t* list, void* data) {
 
   list->size++;
 
-  return 0;
+  return ADS_SUCCESS;
 }
 
-int ads_list_push_next(ads_list_t*      list,
-                      ads_list_node_t* node, 
-                      void*            data)
+ads_status_t
+ads_list_add_next(ads_list_t*      list,
+                  ads_list_node_t* node,
+                  void*            data)
 {
   if(node == NULL) 
     return ads_list_push_front(list, data);
@@ -84,17 +85,17 @@ int ads_list_push_next(ads_list_t*      list,
 
   ads_list_node_t* new_node = ads_list_new_node(data);
   if(new_node == NULL)
-    return -1;
+    return ADS_NOMEM;
   
   new_node->next = node->next;
   node->next = new_node;  
 
   list->size++;
 
-  return 0;
+  return ADS_SUCCESS;
 }
 
-ads_list_node_t* ads_list_get_at(ads_list_t* list, int index) {
+ads_list_node_t* ads_list_get_at(ads_list_t* list, ssize_t index) {
   if(index < 0 || index >= list->size)
     return NULL;
 
@@ -105,9 +106,9 @@ ads_list_node_t* ads_list_get_at(ads_list_t* list, int index) {
   return aux;
 }
 
-int ads_list_remove_front(ads_list_t* list, void** ret_data) {
+void ads_list_pop_front(ads_list_t* list, void** ret_data) {
   if(ads_list_is_empty(list))
-    return -1;
+    return;
 
   ads_list_node_t* node = ads_list_get_head(list);
   if(ret_data)
@@ -120,39 +121,35 @@ int ads_list_remove_front(ads_list_t* list, void** ret_data) {
 
   if(ads_list_get_size(list) == 0)
     list->tail = NULL;
-
-  return 0;
 }
 
-int ads_list_remove_next(ads_list_t*      list, 
-                         ads_list_node_t* node,
-                         void**           ret_data)
+void ads_list_remove_next(ads_list_t*      list,
+                          ads_list_node_t* node,
+                          void**           ret_data)
 {
   if(node == NULL)
-    return ads_list_remove_front(list, ret_data);
-  else if(node == ads_list_get_tail(list))
-    return -1;
+    ads_list_pop_front(list, ret_data);
+  else if(node != ads_list_get_tail(list)) {
+    ads_list_node_t* rem_node = node->next;
+    if(ret_data)
+      *ret_data = rem_node->data;
 
-  ads_list_node_t* rem_node = node->next;
-  if(ret_data)
-    *ret_data = rem_node->data;
+    node->next = rem_node->next;
+    if(node->next == NULL)
+      list->tail = node;
 
-  node->next = rem_node->next;
-  if(node->next == NULL)
-    list->tail = node;
-
-  free(rem_node);
-  list->size--;
-
-  return 0;
+    free(rem_node);
+    list->size--;
+  }
 }
 
-int ads_list_remove_back(ads_list_t* list, void** ret_data) {
+void ads_list_pop_back(ads_list_t* list, void** ret_data) {
   if(ads_list_is_empty(list))
-    return -1;
+    return;
   else if(ads_list_get_size(list) == 1)
-    return ads_list_remove_front(list, ret_data);
-
-  ads_list_node_t* node = ads_list_get_at(list, list->size - 2);
-  return ads_list_remove_next(list, node, ret_data);
+    ads_list_pop_front(list, ret_data);
+  else {
+    ads_list_node_t* node = ads_list_get_at(list, list->size - 2);
+    ads_list_remove_next(list, node, ret_data);
+  }
 }

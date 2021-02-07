@@ -2,6 +2,7 @@
 #define ADS_SLINKED_LIST_H
 
 #include <stdlib.h>
+#include "../common/error.h"
 
 /*
   SINGLE LINKED LIST HEADER
@@ -34,14 +35,14 @@ void ads_list_init(ads_list_t* list, void (*destroy)(void*));
 void ads_list_destroy(ads_list_t* list);
 void ads_list_clean(ads_list_t* list);
 
-int ads_list_remove_front(ads_list_t* list, void** ret_data);
-int ads_list_remove_back(ads_list_t* list, void** ret_data);
-int ads_list_remove_next(ads_list_t* list, ads_list_node_t* node, void** ret_data);
+void ads_list_pop_front(ads_list_t* list, void** ret_data);
+void ads_list_pop_back(ads_list_t* list, void** ret_data);
+void ads_list_remove_next(ads_list_t* list, ads_list_node_t* node, void** ret_data);
 
-int ads_list_push_front(ads_list_t* list, void* data);
-int ads_list_push_back(ads_list_t* list, void* data);
-int ads_list_push_next(ads_list_t* list, ads_list_node_t* node, void* data);
+ads_status_t ads_list_push_front(ads_list_t* list, void* data);
+ads_status_t ads_list_push_back(ads_list_t* list, void* data);
+ads_status_t ads_list_add_next(ads_list_t* list, ads_list_node_t* node, void* data);
 
-ads_list_node_t* ads_list_get_at(ads_list_t* list, int index);
+ads_list_node_t* ads_list_get_at(ads_list_t* list, ssize_t index);
 
 #endif

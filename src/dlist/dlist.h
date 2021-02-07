@@ -2,6 +2,7 @@
 #define ADS_DLINKED_LIST_H
 
 #include <stdlib.h>
+#include "../common/error.h"
 
 /*
   DOUBLE LINKED LIST HEADER
@@ -35,15 +36,15 @@ void ads_dlist_init(ads_dlist_t* dlist, void (*destroy)(void*));
 void ads_dlist_destroy(ads_dlist_t* dlist);
 void ads_dlist_clean(ads_dlist_t* dlist);
 
-int ads_dlist_remove_front(ads_dlist_t* dlist, void** ret_data);
-int ads_dlist_remove_back(ads_dlist_t* dlist, void** ret_data);
-int ads_dlist_remove_next(ads_dlist_t* dlist, ads_dlist_node_t* node, void** ret_data);
-int ads_dlist_remove_prev(ads_dlist_t* dlist, ads_dlist_node_t* node, void** ret_data);
+void ads_dlist_pop_front(ads_dlist_t* dlist, void** ret_data);
+void ads_dlist_pop_back(ads_dlist_t* dlist, void** ret_data);
+void ads_dlist_remove_next(ads_dlist_t* dlist, ads_dlist_node_t* node, void** ret_data);
+void ads_dlist_remove_prev(ads_dlist_t* dlist, ads_dlist_node_t* node, void** ret_data);
 
-int ads_dlist_add_front(ads_dlist_t* dlist, void* data);
-int ads_dlist_add_back(ads_dlist_t* dlist, void* data);
-int ads_dlist_add_next(ads_dlist_t* dlist, ads_dlist_node_t* node, void* data);
-int ads_dlist_add_prev(ads_dlist_t* dlist, ads_dlist_node_t* node, void* data);
+ads_status_t ads_dlist_push_front(ads_dlist_t* dlist, void* data);
+ads_status_t ads_dlist_push_back(ads_dlist_t* dlist, void* data);
+ads_status_t ads_dlist_add_next(ads_dlist_t* dlist, ads_dlist_node_t* node, void* data);
+ads_status_t ads_dlist_add_prev(ads_dlist_t* dlist, ads_dlist_node_t* node, void* data);
 
 ads_dlist_node_t* ads_dlist_get_at(ads_dlist_t* dlist, int index);
 

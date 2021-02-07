@@ -38,16 +38,16 @@ double_capacity(ads_string_t* str) {
   // double the capacity
   char* new_buf = expand(str, str->capacity * 2);
   if(new_buf == NULL)
-    return -1;
+    return 0;
 
   if(old_capacity > BASIC_SIZE)
     free(str->buf);
 
   str->buf = new_buf;
-  return 0;
+  return 1;
 }
 
-static int
+static ads_status_t
 ads_string_internal_copy(ads_string_t* dest,
                          const char*   src_buf,
                          size_t        src_size,
@@ -59,7 +59,7 @@ ads_string_internal_copy(ads_string_t* dest,
     // get a new region of memory that fits src_buf's string
     char* new_buf = calloc(src_capacity + 1, sizeof(char));
     if(new_buf == NULL)
-      return -1;
+      return ADS_NOMEM;
 
     // if dest's string is in the free store(heap), we must free it before the assignment
     if(!ads_string_is_optimized(dest))
@@ -79,10 +79,10 @@ ads_string_internal_copy(ads_string_t* dest,
   dest->capacity = src_capacity;
   dest->size     = src_size;
 
-  return 0;
+  return ADS_SUCCESS;
 }
 
-static int
+static ads_status_t
 ads_string_concat_internal(ads_string_t* dest,
                            const char*   src_buf,
                            size_t        src_size,
@@ -93,7 +93,7 @@ ads_string_concat_internal(ads_string_t* dest,
   // check if the new_size is greater than the current capacity. This check includes optimized strings
   if(new_size > dest->capacity) {
     if(double_capacity(dest) != 0)
-      return -1;
+      return ADS_NOMEM;
   }
 
   // concatenate src in dest
@@ -101,7 +101,7 @@ ads_string_concat_internal(ads_string_t* dest,
   memcpy(&dest->buf[dest->size], src_buf, src_size + 1);
   dest->size = new_size;
 
-  return 0;
+  return ADS_SUCCESS;
 }
 
 void ads_string_clear(ads_string_t* str) {
@@ -112,12 +112,12 @@ void ads_string_clear(ads_string_t* str) {
   ads_string_init_optimize(str);
 }
 
-int ads_string_init(ads_string_t* str, const char* init_str) {
+ads_status_t ads_string_init(ads_string_t* str, const char* init_str) {
   // create an empty, and optimized, string
   if(init_str == NULL) {
     memset(str, 0, sizeof(ads_string_t));
     ads_string_init_optimize(str);
-    return 0;
+    return ADS_SUCCESS;
   }
 
   str->size = strlen(init_str);
@@ -130,12 +130,12 @@ int ads_string_init(ads_string_t* str, const char* init_str) {
     str->capacity = str->size;
     str->buf = calloc(str->capacity + 1, sizeof(char)); // +1 = '\0'
     if(!str->buf)
-      return -1;
+      return ADS_NOMEM;
   }
 
   memcpy(str->buf, init_str, str->size + 1);
 
-  return 0;
+  return ADS_SUCCESS;
 }
 
 void ads_string_destroy(ads_string_t* str) {
@@ -146,14 +146,11 @@ void ads_string_destroy(ads_string_t* str) {
   memset(str, 0, sizeof(ads_string_t));
 }
 
-int ads_string_concat(ads_string_t* dest, const ads_string_t* src) {
-  if(dest == src)
-    return 0;
-
+ads_status_t ads_string_concat(ads_string_t* dest, const ads_string_t* src) {
   return ads_string_concat_internal(dest, src->buf, src->size, src->capacity);
 }
 
-int ads_string_concat_literal(ads_string_t* restrict dest, const char* restrict  src) {
+ads_status_t ads_string_concat_literal(ads_string_t* dest, const char* src) {
   size_t src_size = strlen(src);
   size_t src_capacity = (src_size > BASIC_SIZE) ? src_size : BASIC_SIZE; 
 
@@ -164,13 +161,14 @@ const char* ads_string_contains(const ads_string_t* haystack, const ads_string_t
   return strstr(haystack->buf, needle->buf);
 }
 
-int ads_string_substr(const ads_string_t* str, 
-                      size_t              pos,
-                      int                 count,
-                      ads_string_t*       dest)
+ads_status_t
+ads_string_substr(const ads_string_t* str,
+                  size_t              pos,
+                  int                 count,
+                  ads_string_t*       dest)
 {
   if(pos >= str->size)
-    return -1;
+    return ADS_OUTOFBOUNDS;
 
   if( count == -1 || (count > str->size - pos))
     dest->size = str->size - pos; // copy the whole string starting at pos
@@ -183,18 +181,18 @@ int ads_string_substr(const ads_string_t* str,
     dest->capacity = dest->size;
     dest->buf = malloc(dest->capacity + 1);
     if(dest->buf == NULL)
-      return -1;
+      return ADS_NOMEM;
   }
 
   memcpy(dest->buf, &str->buf[pos], dest->size + 1);
-  return 0;
+  return ADS_SUCCESS;
 }
 
-int ads_string_copy(ads_string_t* dest, const ads_string_t* src) {
+ads_status_t ads_string_copy(ads_string_t* dest, const ads_string_t* src) {
   return ads_string_internal_copy(dest, src->buf, src->size, src->capacity);
 }
 
-int ads_string_copy_literal(ads_string_t* dest, const char* src) {
+ads_status_t ads_string_copy_literal(ads_string_t* dest, const char* src) {
   size_t src_size = strlen(src);
   size_t src_capacity = (src_size > BASIC_SIZE) ? src_size : BASIC_SIZE; 
 
