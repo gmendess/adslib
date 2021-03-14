@@ -136,6 +136,8 @@ void ads_dlist_pop_front(ads_dlist_t* dlist, void** ret_data) {
   ads_dlist_node_t* old_head = ads_dlist_get_head(dlist);
   if(ret_data)
     *ret_data = old_head->data;
+  else
+    dlist->destroy(old_head->data);
 
   dlist->head = old_head->next;
 
@@ -149,6 +151,24 @@ void ads_dlist_pop_front(ads_dlist_t* dlist, void** ret_data) {
 }
 
 void ads_dlist_pop_back(ads_dlist_t* dlist, void** ret_data) {
+  if(ads_dlist_is_empty(dlist))
+    return;
+
+  ads_dlist_node_t* old_tail = ads_dlist_get_tail(dlist);
+  if(ret_data)
+    *ret_data = old_tail->data;
+  else
+    dlist->destroy(old_tail->data);
+
+  dlist->tail = old_tail->prev;
+
+  dlist->size--;
+  free(old_tail);
+
+  if(ads_dlist_is_empty(dlist))
+    dlist->head = NULL;
+  else
+    dlist->tail->next = NULL;
 
 }
 
@@ -162,6 +182,8 @@ void ads_dlist_remove_next(ads_dlist_t* dlist,
     ads_dlist_node_t* rem_node = ads_dlist_get_next(node);
     if(ret_data)
       *ret_data = rem_node->data;
+    else
+      dlist->destroy(rem_node->data);
 
     node->next = rem_node->next;
     if(node->next == NULL)
