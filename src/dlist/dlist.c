@@ -9,6 +9,26 @@ void ads_dlist_init(ads_dlist_t* dlist, void (*destroy)(void*)) {
   dlist->size    = 0;
 }
 
+void ads_dlist_clean(ads_dlist_t* list) {
+  while(!ads_dlist_is_empty(list))
+    ads_dlist_pop_front(list, NULL);
+}
+
+void ads_dlist_destroy(ads_dlist_t* list) {
+  if(list->destroy == NULL)
+    ads_dlist_clean(list);
+  else {
+    void* data = NULL;
+
+    while(!ads_dlist_is_empty(list)) {
+      ads_dlist_pop_front(list, &data);
+      list->destroy(data);
+    }
+  }
+
+  memset(list, 0, sizeof(ads_dlist_t));
+}
+
 static inline 
 ads_dlist_node_t* ads_dlist_new_node(void* data) {
   ads_dlist_node_t* new_node = malloc(sizeof(ads_dlist_node_t));

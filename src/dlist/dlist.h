@@ -28,6 +28,7 @@ typedef struct ads_dlist {
 #define ads_dlist_get_head(dlist) ((dlist)->head)
 #define ads_dlist_get_tail(dlist) ((dlist)->tail)
 #define ads_dlist_is_empty(dlist) (ads_dlist_get_size((dlist)) == 0 ? 1 : 0)
+#define ads_dlist_get_data_as(node, type) ( (type) node->data)
 
 #define ads_dlist_get_next(node)  ((node)->next)
 #define ads_dlist_get_prev(node)  ((node)->prev)
