@@ -4,6 +4,7 @@
 
 /* ----- STRING KEY  ----- */
 
+// djb2 string hashing algorithm
 size_t ADS_MAP_HASH_STRING(void* key_string) {
   size_t hash = 5381;
   char* str = key_string;
@@ -21,6 +22,8 @@ int ADS_MAP_COMPARE_STRING(void* key_string1, void* key_string2) {
 
 /* ----- UNSIGNED INTEGER64 KEY  ----- */
 
+// MurmurHash3 integer hashing algorithm by David Stafford
+// https://zimbry.blogspot.com/2011/09/better-bit-mixing-improving-on.html
 size_t ADS_MAP_HASH_UINT64(void* key_uint64) {
   size_t hash = (size_t) key_uint64;
   
