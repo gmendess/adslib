@@ -5,6 +5,7 @@ typedef enum {
   ADS_SUCCESS = 0,
   ADS_NOMEM,
   ADS_OUTOFBOUNDS,
+  ADS_NOTFOUND
 } ads_status_t;
 
 const char* ads_status_message(ads_status_t status);
