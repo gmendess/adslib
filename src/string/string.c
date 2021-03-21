@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <memory.h>
 #include <string.h>
+#include <ctype.h>
 
 static inline void
 ads_string_init_optimize(ads_string_t* str) {
@@ -140,7 +141,7 @@ ads_status_t ads_string_init(ads_string_t* str, const char* init_str) {
 
 void ads_string_destroy(ads_string_t* str) {
   // if the string is stored in heap, free the memory
-  if(str->size > BASIC_SIZE)
+  if(!ads_string_is_optimized(str))
     free(str->buf);
 
   memset(str, 0, sizeof(ads_string_t));
@@ -349,6 +350,36 @@ int ads_string_replace(ads_string_t* str, const char* old_str, const char* new_s
     return ads_string_replace_gain_char(str, old_str, old_str_size, new_str, new_str_size);
   else
     return ads_string_replace_equal_char(str, old_str, new_str, new_str_size);
+}
+
+void ads_string_trim(ads_string_t* str) {
+  ads_string_trim_left(str);
+  ads_string_trim_right(str);
+}
+
+void ads_string_trim_left(ads_string_t* str) {
+  if(ads_string_is_empty(str))
+    return;
+
+  char* c = str->buf;
+  while(isspace(*c))
+    ++c;
+
+  str->size = str->size - (c - str->buf);
+  memcpy(str->buf, c, str->size + 1); // + 1 = also copy the '\0'
+}
+
+void ads_string_trim_right(ads_string_t* str) {
+  if(ads_string_is_empty(str))
+    return;
+
+  char* c = &str->buf[str->size - 1];
+  while(c > str->buf && isspace(*c))
+    --c;
+  ++c;
+
+  str->size = c - str->buf;
+  *c = '\0';
 }
 
 // compile with -DADS_STRING_EXTENDED option

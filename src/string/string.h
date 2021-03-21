@@ -43,6 +43,10 @@ ads_status_t ads_string_substr(const ads_string_t* str, size_t pos, int count, a
 ads_status_t ads_string_copy(ads_string_t* dest, const ads_string_t* src);
 ads_status_t ads_string_copy_literal(ads_string_t* dest, const char* src);
 
+void ads_string_trim(ads_string_t* str);
+void ads_string_trim_left(ads_string_t* str);
+void ads_string_trim_right(ads_string_t* str);
+
 void ads_string_move(ads_string_t* dest, ads_string_t* src);
 
 void ads_string_clear(ads_string_t* str);
