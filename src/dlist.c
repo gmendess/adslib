@@ -1,4 +1,4 @@
-#include "dlist.h"
+#include "../include/dlist.h"
 #include <stdlib.h>
 #include <memory.h>
 

@@ -2,8 +2,8 @@
 #define ADS_MAP_H
 
 #include <stdlib.h>
-#include "../common/error.h"
-#include "../dlist/dlist.h"
+#include "error.h"
+#include "dlist.h"
 
 // implementation of a map based on a chained hash table
 

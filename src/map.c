@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "map.h"
+#include "../include/map.h"
 
 /* ----- STRING KEY  ----- */
 
@@ -10,7 +10,7 @@ size_t ADS_MAP_HASH_STRING(void* key_string) {
   char* str = key_string;
   
   int c;
-  while (c = *str++)
+  while ((c = *str++))
     hash = ((hash << 5) + hash) + c;
 
   return hash;
@@ -112,7 +112,6 @@ void ads_map_destroy(ads_map_t* map) {
   
   for(size_t i = 0; i < map->buckets && map->size > 0; i++) {
     ads_dlist_t* dlist = &map->htable[i];
-    size_t dlist_size = ads_dlist_get_size(dlist);
 
     ads_dlist_node_t* node = ads_dlist_get_head(dlist);
     while(node) {

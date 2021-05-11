@@ -2,11 +2,11 @@
 #define ADS_STRING_H
 
 #include <stdlib.h>
-#include "../common/error.h"
+#include "error.h"
 
 // compile with -DADS_STRING_EXTENDED option
 #ifdef ADS_STRING_EXTENDED
-#include "../list/list.h"
+#include "list.h"
 #endif
 
 /*

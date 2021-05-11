@@ -1,7 +1,7 @@
 #ifndef ADS_ALGORITHM_H
 #define ADS_ALGORITHM_H
 
-#include "../iterator/iterator.h"
+#include "iterator.h"
 
 typedef void (*ads_callback)(void* data);
 

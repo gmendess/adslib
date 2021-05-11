@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <memory.h>
-#include "vector.h"
+#include "../include/vector.h"
 
 #define ADS_VECTOR_PRE_ALLOCATE 4
 

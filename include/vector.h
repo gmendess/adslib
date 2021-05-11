@@ -2,7 +2,7 @@
 #define ADS_VECTOR_H
 
 #include <stdlib.h>
-#include "../common/error.h"
+#include "error.h"
 
 typedef struct ads_vector ads_vector_t;
 

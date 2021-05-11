@@ -1,5 +1,5 @@
-#include "algorithm.h"
-#include "../iterator/iterator.h"
+#include "../include/algorithm.h"
+#include "../include/iterator.h"
 #include <stdlib.h>
 
 void ads_foreach(ads_iterator_t* it, ads_callback func) {

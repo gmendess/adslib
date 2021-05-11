@@ -2,7 +2,7 @@
 #define ADS_DLINKED_LIST_H
 
 #include <stdlib.h>
-#include "../common/error.h"
+#include "error.h"
 
 /*
   DOUBLE LINKED LIST HEADER

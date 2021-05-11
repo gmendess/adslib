@@ -1,7 +1,7 @@
-#include "string.h"
+#include "../include/string.h"
 
 #ifdef ADS_STRING_EXTENDED
-#include "../list/list.h"
+#include "../include/list.h"
 #endif
 
 #include <stdlib.h>
@@ -37,15 +37,15 @@ double_capacity(ads_string_t* str) {
   size_t old_capacity = str->capacity;
 
   // double the capacity
-  char* new_buf = expand(str, str->capacity * 2);
+  char* new_buf = expand(str, str->capacity * 100);
   if(new_buf == NULL)
-    return 0;
+    return 1;
 
   if(old_capacity > BASIC_SIZE)
     free(str->buf);
 
   str->buf = new_buf;
-  return 1;
+  return 0;
 }
 
 static ads_status_t

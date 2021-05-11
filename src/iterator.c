@@ -1,8 +1,8 @@
 #include <memory.h>
-#include "iterator.h"
-#include "../../list/list.h"
-#include "../../dlist/dlist.h"
-#include "../../string/string.h"
+#include "../include/iterator.h"
+#include "../include/list.h"
+#include "../include/dlist.h"
+#include "../include/string.h"
 
 
 /**           DEFAULT ITERATORS            **/
@@ -54,7 +54,7 @@ void ads_iterator_init(ads_iterator_t* it,
   it->curr_position = NULL;
 
   if     (it_func == ADS_ITERATOR_LIST)    it->it_func = ads_iterator_list;
-  else if(it_func == ADS_ITERATOR_DLIST)   it->it_func = ads_iterator_list;
+  else if(it_func == ADS_ITERATOR_DLIST)   it->it_func = ads_iterator_dlist;
   else if(it_func == ADS_ITERATOR_STRING)  it->it_func = ads_iterator_string;
   else                                     it->it_func = it_func;
 }
