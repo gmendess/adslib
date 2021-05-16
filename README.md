@@ -7,9 +7,9 @@ Another Data Structure Library writen in C
 To install the library, just run the below commands in your terminal:
 
 ```sh
-$ make
-$ sudo make install
-$ make clean
+make
+sudo make install
+make clean
 ```
 
 After the installation, you can include into your project these headers:
