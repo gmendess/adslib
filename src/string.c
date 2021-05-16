@@ -11,41 +11,32 @@
 #include <ctype.h>
 
 static inline void
-ads_string_init_optimize(ads_string_t* str) {
+ads_string_init_optimized(ads_string_t* str) {
   str->capacity = BASIC_SIZE; // capacity is the size of basic_str
   str->buf = str->basic_str;
 }
 
-static inline char* 
+static inline ads_status_t 
 expand(ads_string_t* str, size_t new_capacity) {
-  char* new_buf = calloc(new_capacity + 1, sizeof(char));
-  if(new_buf != NULL)
-    memcpy(new_buf, str->buf, str->size + 1);
 
+  char* new_buf = calloc(new_capacity + 1, sizeof(char));
+  if(new_buf == NULL)
+    return ADS_NOMEM;
+
+  memcpy(new_buf, str->buf, str->size + 1);
+
+  if(!ads_string_is_optimized(str))
+    free(str->buf);
+
+  str->buf = new_buf;
   str->capacity = new_capacity;
-  return new_buf;
+  return ADS_SUCCESS;
   
   /*
     Note: this function can't be just a realloc, because str->buf can point
     to str->basic_str. Thus, would be undefined behaviour to try to realloc a
     region of memory on the stack.
   */
-}
-
-static inline int
-double_capacity(ads_string_t* str) {
-  size_t old_capacity = str->capacity;
-
-  // double the capacity
-  char* new_buf = expand(str, str->capacity * 100);
-  if(new_buf == NULL)
-    return 1;
-
-  if(old_capacity > BASIC_SIZE)
-    free(str->buf);
-
-  str->buf = new_buf;
-  return 0;
 }
 
 static ads_status_t
@@ -86,14 +77,13 @@ ads_string_internal_copy(ads_string_t* dest,
 static ads_status_t
 ads_string_concat_internal(ads_string_t* dest,
                            const char*   src_buf,
-                           size_t        src_size,
-                           size_t        src_capacity)
+                           size_t        src_size)
 {
   size_t new_size = dest->size + src_size;
 
-  // check if the new_size is greater than the current capacity. This check includes optimized strings
+  // check to expand the buffer if necessary
   if(new_size > dest->capacity) {
-    if(double_capacity(dest) != 0)
+    if(expand(dest, new_size * 2) != 0)
       return ADS_NOMEM;
   }
 
@@ -110,22 +100,20 @@ void ads_string_clear(ads_string_t* str) {
     free(str->buf);
 
   memset(str, 0, sizeof(ads_string_t));
-  ads_string_init_optimize(str);
+  ads_string_init_optimized(str);
 }
 
 ads_status_t ads_string_init(ads_string_t* str, const char* init_str) {
-  // create an empty, and optimized, string
-  if(init_str == NULL) {
-    memset(str, 0, sizeof(ads_string_t));
-    ads_string_init_optimize(str);
-    return ADS_SUCCESS;
-  }
+  memset(str, 0, sizeof(ads_string_t));
+
+  if(init_str == NULL)
+    init_str = "";
 
   str->size = strlen(init_str);
 
-  // optimized string, because the string fits on the basic_str buffer 
+  // optimized string, because the string fits in the basic_str buffer 
   if(str->size <= BASIC_SIZE)
-    ads_string_init_optimize(str);
+    ads_string_init_optimized(str);
   else {
     // string in the free store, alloc memory
     str->capacity = str->size;
@@ -148,14 +136,11 @@ void ads_string_destroy(ads_string_t* str) {
 }
 
 ads_status_t ads_string_concat(ads_string_t* dest, const ads_string_t* src) {
-  return ads_string_concat_internal(dest, src->buf, src->size, src->capacity);
+  return ads_string_concat_internal(dest, src->buf, src->size);
 }
 
 ads_status_t ads_string_concat_literal(ads_string_t* dest, const char* src) {
-  size_t src_size = strlen(src);
-  size_t src_capacity = (src_size > BASIC_SIZE) ? src_size : BASIC_SIZE; 
-
-  return ads_string_concat_internal(dest, src, src_size, src_capacity);
+  return ads_string_concat_internal(dest, src, strlen(src));
 }
 
 const char* ads_string_contains(const ads_string_t* haystack, const ads_string_t* needle) {
@@ -171,13 +156,13 @@ ads_string_substr(const ads_string_t* str,
   if(pos >= str->size)
     return ADS_OUTOFBOUNDS;
 
-  if( count == -1 || (count > str->size - pos))
+  if( count == -1 || ( (size_t)count > str->size - pos) )
     dest->size = str->size - pos; // copy the whole string starting at pos
   else
     dest->size = count;
 
   if(dest->size <= BASIC_SIZE)
-    ads_string_init_optimize(dest);
+    ads_string_init_optimized(dest);
   else {
     dest->capacity = dest->size;
     dest->buf = malloc(dest->capacity + 1);
@@ -292,9 +277,9 @@ ads_string_replace_gain_char(ads_string_t* str,
     size_t new_size = str->size + size_diff;
     if(new_size > str->capacity) {
       size_t found_offset = found - str->buf;
-      if(double_capacity(str) != 0)
+      if(expand(str, new_size * 2) != 0)
         return -1;
-      found = &str->buf[found_offset]; // reajust found pointer after `double_capacity`
+      found = &str->buf[found_offset]; // reajust found pointer after `expand`
     }
 
     char* rest = found + old_str_size; // rest of text (in the ex. = "345")
