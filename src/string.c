@@ -16,21 +16,21 @@ ads_string_init_optimized(ads_string_t* str) {
   str->buf = str->basic_str;
 }
 
-static inline ads_status_t 
+static inline char* 
 expand(ads_string_t* str, size_t new_capacity) {
 
   char* new_buf = calloc(new_capacity + 1, sizeof(char));
-  if(new_buf == NULL)
-    return ADS_NOMEM;
+  if(new_buf) {
+    memcpy(new_buf, str->buf, str->size + 1);
 
-  memcpy(new_buf, str->buf, str->size + 1);
+    if(!ads_string_is_optimized(str))
+      free(str->buf);
 
-  if(!ads_string_is_optimized(str))
-    free(str->buf);
+    str->buf = new_buf;
+    str->capacity = new_capacity;
+  }
 
-  str->buf = new_buf;
-  str->capacity = new_capacity;
-  return ADS_SUCCESS;
+  return new_buf;
   
   /*
     Note: this function can't be just a realloc, because str->buf can point
@@ -83,7 +83,7 @@ ads_string_concat_internal(ads_string_t* dest,
 
   // check to expand the buffer if necessary
   if(new_size > dest->capacity) {
-    if(expand(dest, new_size * 2) != 0)
+    if( (src_buf = expand(dest, new_size * 2)) == NULL)
       return ADS_NOMEM;
   }
 
@@ -277,7 +277,7 @@ ads_string_replace_gain_char(ads_string_t* str,
     size_t new_size = str->size + size_diff;
     if(new_size > str->capacity) {
       size_t found_offset = found - str->buf;
-      if(expand(str, new_size * 2) != 0)
+      if(expand(str, new_size * 2) == NULL)
         return -1;
       found = &str->buf[found_offset]; // reajust found pointer after `expand`
     }
