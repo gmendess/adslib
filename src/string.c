@@ -339,11 +339,11 @@ int ads_string_replace(ads_string_t* str, const char* old_str, const char* new_s
 }
 
 void ads_string_trim(ads_string_t* str) {
-  ads_string_trim_left(str);
-  ads_string_trim_right(str);
+  ads_string_ltrim(str);
+  ads_string_rtrim(str);
 }
 
-void ads_string_trim_left(ads_string_t* str) {
+void ads_string_ltrim(ads_string_t* str) {
   if(ads_string_is_empty(str))
     return;
 
@@ -355,7 +355,7 @@ void ads_string_trim_left(ads_string_t* str) {
   memcpy(str->buf, c, str->size + 1); // + 1 = also copy the '\0'
 }
 
-void ads_string_trim_right(ads_string_t* str) {
+void ads_string_rtrim(ads_string_t* str) {
   if(ads_string_is_empty(str))
     return;
 
