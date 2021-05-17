@@ -360,7 +360,7 @@ void ads_string_trim_right(ads_string_t* str) {
     return;
 
   char* c = &str->buf[str->size - 1];
-  while(c > str->buf && isspace(*c))
+  while(c >= str->buf && isspace(*c))
     --c;
   ++c;
 
