@@ -45,6 +45,8 @@ ads_string_internal_copy(ads_string_t* dest,
                          size_t        src_size,
                          size_t        src_capacity)
 {
+  if(dest->buf == src_buf)
+    return ADS_SUCCESS;
 
   // the size of src_buf' string is bigger than dest's capacity
   if(src_size > dest->capacity) {    
@@ -148,29 +150,28 @@ const char* ads_string_contains(const ads_string_t* haystack, const ads_string_t
 }
 
 ads_status_t
-ads_string_substr(const ads_string_t* str,
+ads_string_substr(const ads_string_t* src,
                   size_t              pos,
                   int                 count,
                   ads_string_t*       dest)
 {
-  if(pos >= str->size)
+  if(pos >= src->size)
     return ADS_OUTOFBOUNDS;
 
-  if( count == -1 || ( (size_t)count > str->size - pos) )
-    dest->size = str->size - pos; // copy the whole string starting at pos
+  // calculate `dest` new size
+  if( count == -1 || ( (size_t)count > src->size - pos) )
+    dest->size = src->size - pos; // the whole string starting at pos
   else
     dest->size = count;
 
-  if(dest->size <= BASIC_SIZE)
-    ads_string_init_optimized(dest);
-  else {
-    dest->capacity = dest->size;
-    dest->buf = malloc(dest->capacity + 1);
-    if(dest->buf == NULL)
+  if(dest->size > dest->capacity) {
+    if(expand(dest, dest->size) == NULL)
       return ADS_NOMEM;
   }
 
-  memcpy(dest->buf, &str->buf[pos], dest->size + 1);
+  memcpy(dest->buf, &src->buf[pos], dest->size);
+  dest->buf[dest->size] = '\0';
+
   return ADS_SUCCESS;
 }
 
