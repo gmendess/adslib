@@ -198,7 +198,7 @@ void ads_string_move(ads_string_t* dest, ads_string_t* src) {
 
 // the string will lost characters at the end of the process
 static int
-ads_string_replace_lost_char(ads_string_t* str,
+ads_string_replace_lose_char(ads_string_t* str,
                              const char*   old_str,
                              size_t        old_str_size,
                              const char*   new_str,
@@ -218,7 +218,7 @@ ads_string_replace_lost_char(ads_string_t* str,
   size_t size_diff = old_str_size - new_str_size; // 3("hey") - 2("hi") = 1
 
   // while old_str is found in save_str_buf
-  while( (found = strstr(save_str_buf, old_str)) ) {
+  while( save_str_buf[0] && (found = strstr(save_str_buf, old_str)) ) {
     ++count_replaces;
 
     /*
@@ -267,7 +267,7 @@ ads_string_replace_gain_char(ads_string_t* str,
   size_t size_diff = new_str_size - old_str_size; // 3("hey") - 2("hi") = 1
 
   // while old_str is found in save_str_buf
-  while( (found = strstr(save_str_buf, old_str)) ) {
+  while( save_str_buf[0] && (found = strstr(save_str_buf, old_str)) ) {
     ++count_replaces;
 
     /*
@@ -331,7 +331,7 @@ int ads_string_replace(ads_string_t* str, const char* old_str, const char* new_s
 
   size_t new_str_size = strlen(new_str);
   if(new_str_size < old_str_size)
-    return ads_string_replace_lost_char(str, old_str, old_str_size, new_str, new_str_size);
+    return ads_string_replace_lose_char(str, old_str, old_str_size, new_str, new_str_size);
   else if(new_str_size > old_str_size)
     return ads_string_replace_gain_char(str, old_str, old_str_size, new_str, new_str_size);
   else
