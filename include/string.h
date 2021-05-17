@@ -20,7 +20,7 @@ typedef struct ads_string {
   size_t capacity; // number of characters the string can hold at all
   char* buf;       // pointer to basic_str(strings up to 15 chars) or to a region in free store(heap)
 
-  /* optimization: the string will be store in this buffer if the numbers of characters in the
+  /* optimization: the string will be stored in this buffer if the numbers of characters in the
      string is up to 15. Small strings can be stored on the stack */
   char basic_str[BASIC_SIZE + 1]; // +1 = '\0'
 } ads_string_t;
@@ -29,6 +29,10 @@ typedef struct ads_string {
 #define ads_string_get_size(str) ((str)->size)
 #define ads_string_is_empty(str) ((str)->size == 0)
 #define ads_string_is_optimized(str) ((str)->capacity == BASIC_SIZE)
+
+#define ads_string_compact_init(var_name, init_str) \
+  ads_string_t (var_name); \
+  ads_string_init(&(var_name), init_str) \
 
 ads_status_t ads_string_init(ads_string_t* str, const char* init_str);
 void ads_string_destroy(ads_string_t* str);
