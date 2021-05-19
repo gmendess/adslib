@@ -96,11 +96,11 @@ ads_list_add_next(ads_list_t*      list,
 }
 
 ads_list_node_t* ads_list_get_at(ads_list_t* list, ssize_t index) {
-  if(index < 0 || index >= list->size)
+  if(index < 0 || (size_t) index >= list->size)
     return NULL;
 
   ads_list_node_t* aux = ads_list_get_head(list);
-  for(int i = 0; i < index; i++)
+  for(ssize_t i = 0; i < index; i++)
     aux = ads_list_get_next(aux);
 
   return aux;

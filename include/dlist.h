@@ -47,6 +47,6 @@ ads_status_t ads_dlist_push_back(ads_dlist_t* dlist, void* data);
 ads_status_t ads_dlist_add_next(ads_dlist_t* dlist, ads_dlist_node_t* node, void* data);
 ads_status_t ads_dlist_add_prev(ads_dlist_t* dlist, ads_dlist_node_t* node, void* data);
 
-ads_dlist_node_t* ads_dlist_get_at(ads_dlist_t* dlist, int index);
+ads_dlist_node_t* ads_dlist_get_at(ads_dlist_t* dlist, ssize_t index);
 
 #endif

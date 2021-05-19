@@ -210,13 +210,13 @@ ads_dlist_node_t* ads_dlist_look_forward(ads_dlist_node_t* node, int steps) {
   return node;
 }
 
-ads_dlist_node_t* ads_dlist_get_at(ads_dlist_t* dlist, int index) {
+ads_dlist_node_t* ads_dlist_get_at(ads_dlist_t* dlist, ssize_t index) {
   size_t dlist_size = ads_dlist_get_size(dlist);
 
-  if(index < 0 || index >= dlist_size)
+  if(index < 0 || (size_t) index >= dlist_size)
     return NULL;
 
-  int middle = dlist_size / 2;
+  ssize_t middle = dlist_size / 2;
 
   if(index >= middle)
     return ads_dlist_look_backward(dlist->tail, (dlist_size - 1) - index);

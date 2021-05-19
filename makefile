@@ -5,12 +5,12 @@ HEADER = $(wildcard include/*.h)
 OBJ = $(subst .c,.o,$(subst src,obj,$(SRC)))
 
 CC = gcc
-CC_FLAGS = -c -Wall -pedantic
+CC_FLAGS = -c -W -Wall -pedantic
 
 all: config $(OBJ)
 
 ./obj/%.o: ./src/%.c ./include/%.h
-	$(CC) $< $(CC_FLAGS) -o $@
+	$(CC) $< $(CC_FLAGS) -DADS_STRING_EXTENDED -o $@
 
 config:
 	@ mkdir -p obj

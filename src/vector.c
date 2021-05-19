@@ -41,7 +41,7 @@ ads_vector_init(ads_vector_t*        vec,
 
 void ads_vector_clear(ads_vector_t* vec) {
   if(vec->destroy) {
-    for(int i = 0; i < vec->size; i++)
+    for(size_t i = 0; i < vec->size; i++)
       vec->destroy(ads_vector_get_idx_address(vec, i));
   }
   memset(vec->buf, 0, vec->size * vec->data_size);
@@ -83,12 +83,12 @@ ads_status_t ads_vector_push_front(ads_vector_t* vec, void* data) {
 }
 
 ads_status_t ads_vector_insert_at(ads_vector_t* vec, ssize_t index, void* data) {
-  if(index < 0 || index > vec->size)
+  if(index < 0 || (size_t) index > vec->size)
     return ADS_OUTOFBOUNDS;
   
   if(index == 0)
     return ads_vector_push_front(vec, data);
-  else if(index == vec->size)
+  else if((size_t) index == vec->size)
     return ads_vector_push_back(vec, data);
   else {
     
@@ -110,7 +110,7 @@ ads_status_t ads_vector_insert_at(ads_vector_t* vec, ssize_t index, void* data) 
 }
 
 ads_status_t ads_vector_get_at(ads_vector_t* vec, ssize_t index, void** out) {
-  if(index < 0 || index >= vec->size)
+  if(index < 0 || (size_t) index >= vec->size)
     return ADS_OUTOFBOUNDS;
 
   if(out)

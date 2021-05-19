@@ -435,7 +435,7 @@ int ads_string_split(ads_string_t* str, const char* delimiter, ads_list_t* out) 
     if(data == NULL)
       return -1;
 
-    if(ads_list_push_back(out, data) == -1) // push data into the list
+    if(ads_list_push_back(out, data) != ADS_SUCCESS) // push data into the list
       return -1;
     save_str_buf = found + delimiter_size;
   }
@@ -447,7 +447,7 @@ int ads_string_split(ads_string_t* str, const char* delimiter, ads_list_t* out) 
     if(data == NULL)
       return -1;
 
-    if(ads_list_push_back(out, data) == -1) // push data into the list
+    if(ads_list_push_back(out, data) != ADS_SUCCESS) // push data into the list
       return -1;
   }
 
