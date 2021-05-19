@@ -32,6 +32,10 @@ typedef struct ads_list {
 #define ads_list_get_next(node) ((node)->next)
 
 void ads_list_init(ads_list_t* list, void (*destroy)(void*));
+#define ads_list_compact_init(list, destroy) \
+  ads_list_t (list); \
+  ads_list_init(&(list), (destroy))
+
 void ads_list_destroy(ads_list_t* list);
 void ads_list_clean(ads_list_t* list);
 
