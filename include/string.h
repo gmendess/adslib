@@ -34,18 +34,18 @@ typedef struct ads_string {
   ads_string_t (var_name); \
   ads_string_init(&(var_name), init_str) \
 
-ads_status_t ads_string_init(ads_string_t* str, const char* init_str);
+ads_status_t ads_string_init(ads_string_t* restrict str, const char* restrict init_str);
 void ads_string_destroy(ads_string_t* str);
 
 ads_status_t ads_string_concat(ads_string_t* dest, const ads_string_t* src);
-ads_status_t ads_string_concat_literal(ads_string_t* dest, const char* src);
+ads_status_t ads_string_concat_literal(ads_string_t* restrict dest, const char* restrict src);
 
 const char* ads_string_contains(const ads_string_t* haystack, const ads_string_t* needle);
 
 ads_status_t ads_string_substr(const ads_string_t* str, size_t pos, int count, ads_string_t* dest);
 
 ads_status_t ads_string_copy(ads_string_t* dest, const ads_string_t* src);
-ads_status_t ads_string_copy_literal(ads_string_t* dest, const char* src);
+ads_status_t ads_string_copy_literal(ads_string_t* restrict dest, const char* restrict src);
 
 void ads_string_trim(ads_string_t* str);
 void ads_string_ltrim(ads_string_t* str);
@@ -55,7 +55,7 @@ void ads_string_move(ads_string_t* dest, ads_string_t* src);
 
 void ads_string_clear(ads_string_t* str);
 
-int ads_string_replace(ads_string_t* str, const char* old, const char* new);
+int ads_string_replace(ads_string_t* restrict str, const char* old, const char* new);
 
 #ifdef ADS_STRING_EXTENDED
 int ads_string_split(ads_string_t* str, const char* delimiters, ads_list_t* out);

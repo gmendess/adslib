@@ -40,8 +40,8 @@ expand(ads_string_t* str, size_t new_capacity) {
 }
 
 static ads_status_t
-ads_string_internal_copy(ads_string_t* dest,
-                         const char*   src_buf,
+ads_string_internal_copy(ads_string_t* restrict dest,
+                         const char*   restrict src_buf,
                          size_t        src_size,
                          size_t        src_capacity)
 {
@@ -77,8 +77,8 @@ ads_string_internal_copy(ads_string_t* dest,
 }
 
 static ads_status_t
-ads_string_concat_internal(ads_string_t* dest,
-                           const char*   src_buf,
+ads_string_concat_internal(ads_string_t* restrict dest,
+                           const char*   restrict src_buf,
                            size_t        src_size)
 {
   size_t new_size = dest->size + src_size;
@@ -105,7 +105,7 @@ void ads_string_clear(ads_string_t* str) {
   ads_string_init_optimized(str);
 }
 
-ads_status_t ads_string_init(ads_string_t* str, const char* init_str) {
+ads_status_t ads_string_init(ads_string_t* restrict str, const char* restrict init_str) {
   memset(str, 0, sizeof(ads_string_t));
 
   if(init_str == NULL)
@@ -186,7 +186,9 @@ ads_status_t ads_string_copy_literal(ads_string_t* dest, const char* src) {
   return ads_string_internal_copy(dest, src, src_size, src_capacity);
 }
 
-void ads_string_move(ads_string_t* dest, ads_string_t* src) {
+void ads_string_move(ads_string_t* restrict dest, ads_string_t* restrict src) {
+  if(dest == src) return;
+
   memcpy(dest, src, sizeof(ads_string_t));
 
   if(ads_string_is_optimized(dest))
@@ -198,7 +200,7 @@ void ads_string_move(ads_string_t* dest, ads_string_t* src) {
 
 // the string will lost characters at the end of the process
 static int
-ads_string_replace_lose_char(ads_string_t* str,
+ads_string_replace_lose_char(ads_string_t* restrict str,
                              const char*   old_str,
                              size_t        old_str_size,
                              const char*   new_str,
@@ -246,7 +248,7 @@ ads_string_replace_lose_char(ads_string_t* str,
 
 // the string will gain characters at the end of the process
 static int
-ads_string_replace_gain_char(ads_string_t* str,
+ads_string_replace_gain_char(ads_string_t* restrict str,
                              const char*   old_str,
                              size_t        old_str_size,
                              const char*   new_str,
@@ -304,7 +306,7 @@ ads_string_replace_gain_char(ads_string_t* str,
 }
 
 static int
-ads_string_replace_equal_char(ads_string_t* str,
+ads_string_replace_equal_char(ads_string_t* restrict str,
                              const char*   old_str,
                              const char*   new_str,
                              size_t        size)
@@ -324,7 +326,7 @@ ads_string_replace_equal_char(ads_string_t* str,
   return count_replaces;
 }
 
-int ads_string_replace(ads_string_t* str, const char* old_str, const char* new_str) {
+int ads_string_replace(ads_string_t* restrict str, const char* old_str, const char* new_str) {
   size_t old_str_size = strlen(old_str);
   if(old_str_size > str->size)
     return 0;
