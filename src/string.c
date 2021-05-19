@@ -141,7 +141,7 @@ ads_status_t ads_string_concat(ads_string_t* dest, const ads_string_t* src) {
   return ads_string_concat_internal(dest, src->buf, src->size);
 }
 
-ads_status_t ads_string_concat_literal(ads_string_t* dest, const char* src) {
+ads_status_t ads_string_concat_cstr(ads_string_t* dest, const char* src) {
   return ads_string_concat_internal(dest, src, strlen(src));
 }
 
@@ -149,7 +149,7 @@ const char* ads_string_contains(const ads_string_t* haystack, const ads_string_t
   return strstr(haystack->buf, needle->buf);
 }
 
-const char* ads_string_contains_literal(const ads_string_t* restrict haystack, const char* restrict needle) {
+const char* ads_string_contains_cstr(const ads_string_t* restrict haystack, const char* restrict needle) {
   return strstr(haystack->buf, needle);
 }
 
@@ -183,7 +183,7 @@ ads_status_t ads_string_copy(ads_string_t* dest, const ads_string_t* src) {
   return ads_string_internal_copy(dest, src->buf, src->size, src->capacity);
 }
 
-ads_status_t ads_string_copy_literal(ads_string_t* dest, const char* src) {
+ads_status_t ads_string_copy_cstr(ads_string_t* dest, const char* src) {
   size_t src_size = strlen(src);
   size_t src_capacity = (src_size > BASIC_SIZE) ? src_size : BASIC_SIZE; 
 

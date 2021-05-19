@@ -38,15 +38,15 @@ ads_status_t ads_string_init(ads_string_t* restrict str, const char* restrict in
 void ads_string_destroy(ads_string_t* str);
 
 ads_status_t ads_string_concat(ads_string_t* dest, const ads_string_t* src);
-ads_status_t ads_string_concat_literal(ads_string_t* restrict dest, const char* restrict src);
+ads_status_t ads_string_concat_cstr(ads_string_t* restrict dest, const char* restrict src);
 
 const char* ads_string_contains(const ads_string_t* haystack, const ads_string_t* needle);
-const char* ads_string_contains_literal(const ads_string_t* restrict haystack, const char* restrict needle);
+const char* ads_string_contains_cstr(const ads_string_t* restrict haystack, const char* restrict needle);
 
 ads_status_t ads_string_substr(const ads_string_t* str, size_t pos, int count, ads_string_t* dest);
 
 ads_status_t ads_string_copy(ads_string_t* dest, const ads_string_t* src);
-ads_status_t ads_string_copy_literal(ads_string_t* restrict dest, const char* restrict src);
+ads_status_t ads_string_copy_cstr(ads_string_t* restrict dest, const char* restrict src);
 
 void ads_string_trim(ads_string_t* str);
 void ads_string_ltrim(ads_string_t* str);
