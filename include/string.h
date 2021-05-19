@@ -41,6 +41,7 @@ ads_status_t ads_string_concat(ads_string_t* dest, const ads_string_t* src);
 ads_status_t ads_string_concat_literal(ads_string_t* restrict dest, const char* restrict src);
 
 const char* ads_string_contains(const ads_string_t* haystack, const ads_string_t* needle);
+const char* ads_string_contains_literal(const ads_string_t* restrict haystack, const char* restrict needle);
 
 ads_status_t ads_string_substr(const ads_string_t* str, size_t pos, int count, ads_string_t* dest);
 

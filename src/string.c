@@ -149,6 +149,10 @@ const char* ads_string_contains(const ads_string_t* haystack, const ads_string_t
   return strstr(haystack->buf, needle->buf);
 }
 
+const char* ads_string_contains_literal(const ads_string_t* restrict haystack, const char* restrict needle) {
+  return strstr(haystack->buf, needle);
+}
+
 ads_status_t
 ads_string_substr(const ads_string_t* src,
                   size_t              pos,
